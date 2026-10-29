@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impulse-Momentum Principle Suite</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars & Math-style styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100,116,139,0.3);
+            border-radius: 9999px;
+        }
+        .math-symbol {
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+        }
+        .tab-active {
+            border-bottom: 3px solid #0284c7;
+            color: #0284c7;
+            font-weight: 600;
+        }
+        .dark .tab-active {
+            border-bottom: 3px solid #38bdf8;
+            color: #38bdf8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans min-h-screen transition-colors duration-200">
+
+    <!-- Header Navigation Bar -->
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-brand-500 text-white rounded-lg shadow-md">
+                    <i class="fa-solid fa-gauge-high text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Impulse-Momentum Physics Suite</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">4-Way Interactive Analysis & Visualization</p>
+                </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <button id="themeToggle" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-lg"></i>
+                </button>
+                <button id="btnPreset" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-3 py-2 rounded-lg font-medium transition">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Load Example
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Method Navigation Tabs -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
+            <nav class="flex text-sm sm:text-base min-w-max" id="navTabs">
+                <button data-tab="case1" class="tab-btn tab-active px-5 py-4 flex items-center space-x-2 transition hover:text-brand-500">
+                    <i class="fa-solid fa-arrows-left-right-to-line"></i>
+                    <span>1. Constant Force</span>
+                </button>
+                <button data-tab="case2" class="tab-btn text-slate-500 dark:text-slate-400 px-5 py-4 flex items-center space-x-2 transition hover:text-brand-500">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>2. Variable Force F(t)</span>
+                </button>
+                <button data-tab="case3" class="tab-btn text-slate-500 dark:text-slate-400 px-5 py-4 flex items-center space-x-2 transition hover:text-brand-500">
+                    <i class="fa-solid fa-car-crash"></i>
+                    <span>3. Collision (2-Body)</span>
+                </button>
+                <button data-tab="case4" class="tab-btn text-slate-500 dark:text-slate-400 px-5 py-4 flex items-center space-x-2 transition hover:text-brand-500">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>4. Angular Momentum</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Dynamic Grid Layout: Inputs & Graph/Results -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Left Panel: Controls & Input Parameters (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Input Panel -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="methodTitle" class="font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                            <span>Constant Force Impulse</span>
+                        </h2>
+                        <span id="formulaBadge" class="text-xs bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-400 px-2.5 py-1 rounded-full font-mono font-medium">
+                            J = F·Δt = m(v_f - v_i)
+                        </span>
+                    </div>
+
+                    <!-- Solver Selection dropdown for flexibility -->
+                    <div class="mb-4 bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <label for="solveForSelect" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Target Unknown Variable</label>
+                        <select id="solveForSelect" class="w-full text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Dynamic Input Fields Container -->
+                    <form id="physicsForm" onsubmit="return false;" class="space-y-4">
+                        <div id="dynamicInputs" class="space-y-3">
+                            <!-- Injected by JavaScript -->
+                        </div>
+
+                        <button id="btnCalculate" type="button" class="w-full mt-4 bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow transition duration-150 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-calculator"></i>
+                            <span>Calculate & Plot</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Mathematical Context / Quick Theory Card -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
+                    <h3 class="font-semibold text-sm mb-2 text-slate-700 dark:text-slate-300 flex items-center">
+                        <i class="fa-solid fa-book-open text-brand-500 mr-2"></i> Governing Physics Rules
+                    </h3>
+                    <p id="theoryText" class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        The linear impulse-momentum principle states that the total impulse applied to a body equals the change in its linear momentum over the given time interval.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel: Graphs & Step-by-Step Solution (7 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- Primary Result Cards Row -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="resultCards">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Interactive Visualization Canvas -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center">
+                            <i class="fa-solid fa-chart-area text-brand-500 mr-2"></i> Interactive Physics Plot
+                        </h3>
+                        <span class="text-xs text-slate-400 font-mono">Chart.js Visualization</span>
+                    </div>
+                    <div class="relative w-full h-72 sm:h-80">
+                        <canvas id="physicsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Calculation Breakdown -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3 flex items-center">
+                        <i class="fa-solid fa-list-check text-brand-500 mr-2"></i> Step-by-Step Solution Breakdown
+                    </h3>
+                    <div id="solutionSteps" class="font-mono text-xs sm:text-sm bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2 overflow-x-auto text-slate-700 dark:text-slate-300">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Application JavaScript Code -->
+    <script>
+        /**
+         * Impulse-Momentum Principle Interactive Web Application
+         * Handles 4 Case Calculations, Numerical Integration, Restitution Equations,
+         * Chart.js visualizations, and Step-by-Step Mathematical Output.
+         */
+
+        // App State Management
+        let currentCase = 'case1';
+        let chartInstance = null;
+
+        // Configurations for each calculation method
+        const caseConfigs = {
+            case1: {
+                title: "1. Constant Force Impulse",
+                formula: "J = F · Δt = m(v_f - v_i)",
+                theory: "When a constant force F acts over a duration Δt, the impulse vector J is simply F × Δt. This directly alters linear momentum p = m·v.",
+                variables: [
+                    { id: 'm', label: 'Mass (m)', unit: 'kg', default: 5 },
+                    { id: 'vi', label: 'Initial Velocity (v_i)', unit: 'm/s', default: 2 },
+                    { id: 'vf', label: 'Final Velocity (v_f)', unit: 'm/s', default: 10 },
+                    { id: 'F', label: 'Constant Force (F)', unit: 'N', default: 20 },
+                    { id: 'dt', label: 'Time Interval (Δt)', unit: 's', default: 2 }
+                ],
+                solvers: [
+                    { id: 'vf', label: 'Final Velocity (v_f)' },
+                    { id: 'vi', label: 'Initial Velocity (v_i)' },
+                    { id: 'F', label: 'Force (F)' },
+                    { id: 'dt', label: 'Time Interval (Δt)' },
+                    { id: 'm', label: 'Mass (m)' }
+                ]
+            },
+            case2: {
+                title: "2. Variable Force Integration F(t)",
+                formula: "J = ∫ F(t) dt = m(v_f - v_i)",
+                theory: "For dynamic forces changing over time F(t), Impulse J is calculated as the definite integral of force with respect to time using numerical Trapezoidal Integration.",
+                variables: [
+                    { id: 'm', label: 'Mass (m)', unit: 'kg', default: 4 },
+                    { id: 'vi', label: 'Initial Velocity (v_i)', unit: 'm/s', default: 0 },
+                    { id: 't0', label: 'Start Time (t_i)', unit: 's', default: 0 },
+                    { id: 'tf', label: 'End Time (t_f)', unit: 's', default: 4 },
+                    { id: 'func', label: 'Force Function F(t)', unit: 'Expression', default: '10*sin(t) + 5', isString: true }
+                ],
+                solvers: [
+                    { id: 'vf', label: 'Final Velocity (v_f)' },
+                    { id: 'vi', label: 'Initial Velocity (v_i)' },
+                    { id: 'm', label: 'Mass (m)' }
+                ]
+            },
+            case3: {
+                title: "3. 2-Body Collision & Restitution",
+                formula: "e = (v_B2 - v_A2)/(v_A1 - v_B1)",
+                theory: "Combines Conservation of Linear Momentum [m_A·v_A1 + m_B·v_B1 = m_A·v_A2 + m_B·v_B2] with the Coefficient of Restitution (e) to solve post-impact velocities and impulse exchange.",
+                variables: [
+                    { id: 'mA', label: 'Mass Object A (m_A)', unit: 'kg', default: 3 },
+                    { id: 'vA1', label: 'Initial Velocity A (v_A1)', unit: 'm/s', default: 8 },
+                    { id: 'mB', label: 'Mass Object B (m_B)', unit: 'kg', default: 5 },
+                    { id: 'vB1', label: 'Initial Velocity B (v_B1)', unit: 'm/s', default: -2 },
+                    { id: 'e', label: 'Restitution Coeff (e)', unit: '0 to 1', default: 0.75 }
+                ],
+                solvers: [
+                    { id: 'v2', label: 'Final Velocities (v_A2 & v_B2)' }
+                ]
+            },
+            case4: {
+                title: "4. Angular Impulse-Momentum",
+                formula: "J_θ = ∫ T dt = I(ω_f - ω_i)",
+                theory: "Rotational counterpart to linear impulse. Angular impulse (integral of torque T over time) changes a rigid body's angular momentum L = I·ω.",
+                variables: [
+                    { id: 'I', label: 'Moment of Inertia (I)', unit: 'kg·m²', default: 2.5 },
+                    { id: 'wi', label: 'Initial Angular Vel (ω_i)', unit: 'rad/s', default: 5 },
+                    { id: 'wf', label: 'Final Angular Vel (ω_f)', unit: 'rad/s', default: 25 },
+                    { id: 'T', label: 'Constant Torque (T)', unit: 'N·m', default: 10 },
+                    { id: 'dt', label: 'Time Interval (Δt)', unit: 's', default: 5 }
+                ],
+                solvers: [
+                    { id: 'wf', label: 'Final Angular Velocity (ω_f)' },
+                    { id: 'wi', label: 'Initial Angular Velocity (ω_i)' },
+                    { id: 'T', label: 'Torque (T)' },
+                    { id: 'dt', label: 'Time Interval (Δt)' },
+                    { id: 'I', label: 'Moment of Inertia (I)' }
+                ]
+            }
+        };
+
+        // DOM Element References
+        const elements = {
+            navTabs: document.getElementById('navTabs'),
+            methodTitle: document.getElementById('methodTitle'),
+            formulaBadge: document.getElementById('formulaBadge'),
+            solveForSelect: document.getElementById('solveForSelect'),
+            dynamicInputs: document.getElementById('dynamicInputs'),
+            theoryText: document.getElementById('theoryText'),
+            btnCalculate: document.getElementById('btnCalculate'),
+            resultCards: document.getElementById('resultCards'),
+            solutionSteps: document.getElementById('solutionSteps'),
+            themeToggle: document.getElementById('themeToggle'),
+            btnPreset: document.getElementById('btnPreset')
+        };
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            loadCase(currentCase);
+        });
+
+        function setupEventListeners() {
+            // Tab Switcher
+            elements.navTabs.addEventListener('click', (e) => {
+                const btn = e.target.closest('.tab-btn');
+                if (!btn) return;
+                
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('tab-active');
+                    b.classList.add('text-slate-500', 'dark:text-slate-400');
+                });
+                btn.classList.add('tab-active');
+                btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+
+                currentCase = btn.dataset.tab;
+                loadCase(currentCase);
+            });
+
+            // Target solver dropdown change
+            elements.solveForSelect.addEventListener('change', () => {
+                updateDisabledInputs();
+            });
+
+            // Calculate Button
+            elements.btnCalculate.addEventListener('click', calculateAndRender);
+
+            // Theme Switcher
+            elements.themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                if (chartInstance) renderChart(lastChartData); // Redraw with proper theme colors
+            });
+
+            // Preset Button
+            elements.btnPreset.addEventListener('click', loadPresetValues);
+        }
+
+        // Render inputs and solver drop downs based on current tab case
+        function loadCase(caseKey) {
+            const config = caseConfigs[caseKey];
+            elements.methodTitle.innerHTML = `<span>${config.title}</span>`;
+            elements.formulaBadge.textContent = config.formula;
+            elements.theoryText.textContent = config.theory;
+
+            // Populate Solver options
+            elements.solveForSelect.innerHTML = config.solvers.map(s => 
+                `<option value="${s.id}">Solve for ${s.label}</option>`
+            ).join('');
+
+            // Populate Inputs
+            renderInputFields(config.variables);
+            updateDisabledInputs();
+            calculateAndRender();
+        }
+
+        function renderInputFields(variables) {
+            elements.dynamicInputs.innerHTML = variables.map(v => `
+                <div class="input-group" id="group_${v.id}">
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="input_${v.id}" class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            ${v.label}
+                        </label>
+                        <span class="text-xs text-slate-400 font-mono">${v.unit}</span>
+                    </div>
+                    <input 
+                        type="${v.isString ? 'text' : 'number'}" 
+                        id="input_${v.id}" 
+                        value="${v.default}"
+                        step="any"
+                        class="w-full text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md p-2 focus:ring-2 focus:ring-brand-500 focus:outline-none transition disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-slate-800"
+                    />
+                </div>
+            `).join('');
+        }
+
+        function updateDisabledInputs() {
+            const targetVar = elements.solveForSelect.value;
+            const config = caseConfigs[currentCase];
+
+            config.variables.forEach(v => {
+                const inputEl = document.getElementById(`input_${v.id}`);
+                const groupEl = document.getElementById(`group_${v.id}`);
+                if (!inputEl) return;
+
+                if (v.id === targetVar || (currentCase === 'case3' && targetVar === 'v2')) {
+                    inputEl.disabled = true;
+                    inputEl.value = "(Target)";
+                    groupEl.classList.add('opacity-75');
+                } else {
+                    inputEl.disabled = false;
+                    if (inputEl.value === "(Target)") {
+                        inputEl.value = v.default;
+                    }
+                    groupEl.classList.remove('opacity-75');
+                }
+            });
+        }
+
+        function loadPresetValues() {
+            const config = caseConfigs[currentCase];
+            config.variables.forEach(v => {
+                const inputEl = document.getElementById(`input_${v.id}`);
+                if (inputEl && !inputEl.disabled) {
+                    inputEl.value = v.default;
+                }
+            });
+            calculateAndRender();
+        }
+
+        // Helper function to safely parse F(t) expression
+        function evaluateFunction(expr, t) {
+            try {
+                // Replace mathematical shorthand for JS Math functions
+                let sanitized = expr.toLowerCase()
+                    .replace(/sin/g, 'Math.sin')
+                    .replace(/cos/g, 'Math.cos')
+                    .replace(/tan/g, 'Math.tan')
+                    .replace(/sqrt/g, 'Math.sqrt')
+                    .replace(/pi/g, 'Math.PI')
+                    .replace(/\^/g, '**');
+                
+                // Construct safe function scope
+                const fn = new Function('t', `return ${sanitized};`);
+                return fn(t);
+            } catch (e) {
+                return 0;
+            }
+        }
+
+        // Main Calculation Router
+        let lastChartData = null;
+
+        function calculateAndRender() {
+            const target = elements.solveForSelect.value;
+            let results = [];
+            let steps = [];
+            let chartData = null;
+
+            if (currentCase === 'case1') {
+                const m = parseFloat(document.getElementById('input_m').value) || 0;
+                let vi = parseFloat(document.getElementById('input_vi').value) || 0;
+                let vf = parseFloat(document.getElementById('input_vf').value) || 0;
+                let F = parseFloat(document.getElementById('input_F').value) || 0;
+                let dt = parseFloat(document.getElementById('input_dt').value) || 0;
+
+                // Solve for target variable
+                if (target === 'vf') vf = vi + (F * dt) / m;
+                else if (target === 'vi') vi = vf - (F * dt) / m;
+                else if (target === 'F') F = (m * (vf - vi)) / dt;
+                else if (target === 'dt') dt = (m * (vf - vi)) / F;
+                else if (target === 'm') m = (F * dt) / (vf - vi);
+
+                const J = F * dt;
+                const p_i = m * vi;
+                const p_f = m * vf;
+
+                results = [
+                    { label: "Impulse (J)", val: J.toFixed(2), unit: "N·s" },
+                    { label: "Target Value", val: getVarVal(target, {vf,vi,F,dt,m}).toFixed(2), unit: getUnit(target) },
+                    { label: "Δ Momentum (Δp)", val: (p_f - p_i).toFixed(2), unit: "kg·m/s" }
+                ];
+
+                steps = [
+                    `1. Fundamental Principle: J = F × Δt = m(v_f - v_i)`,
+                    `2. Applied Mass (m) = ${m} kg, Time Interval (Δt) = ${dt} s`,
+                    `3. Calculated Impulse: J = ${F.toFixed(2)} N × ${dt.toFixed(2)} s = ${J.toFixed(2)} N·s`,
+                    `4. Initial Momentum p_i = ${p_i.toFixed(2)} kg·m/s`,
+                    `5. Final Momentum p_f = ${p_f.toFixed(2)} kg·m/s`,
+                    `6. Solved Parameter [${target}]: ${getVarVal(target, {vf,vi,F,dt,m}).toFixed(4)} ${getUnit(target)}`
+                ];
+
+                chartData = generateCase1Chart(F, dt, vi, vf, m);
+
+            } else if (currentCase === 'case2') {
+                const m = parseFloat(document.getElementById('input_m').value) || 1;
+                let vi = parseFloat(document.getElementById('input_vi').value) || 0;
+                const t0 = parseFloat(document.getElementById('input_t0').value) || 0;
+                const tf = parseFloat(document.getElementById('input_tf').value) || 1;
+                const funcStr = document.getElementById('input_func').value || '0';
+
+                // Trapezoidal Integration for J
+                const N = 100;
+                const step = (tf - t0) / N;
+                let J = 0;
+                let timePoints = [];
+                let forcePoints = [];
+                let velPoints = [];
+
+                let currentVel = vi;
+                timePoints.push(t0);
+                forcePoints.push(evaluateFunction(funcStr, t0));
+                velPoints.push(currentVel);
+
+                for (let i = 1; i <= N; i++) {
+                    const t_prev = t0 + (i - 1) * step;
+                    const t_curr = t0 + i * step;
+                    const f_prev = evaluateFunction(funcStr, t_prev);
+                    const f_curr = evaluateFunction(funcStr, t_curr);
+
+                    const trapImpulse = 0.5 * (f_prev + f_curr) * step;
+                    J += trapImpulse;
+                    currentVel += trapImpulse / m;
+
+                    timePoints.push(t_curr);
+                    forcePoints.push(f_curr);
+                    velPoints.push(currentVel);
+                }
+
+                let vf = vi + J / m;
+                if (target === 'vi') vi = vf - J / m;
+                if (target === 'm') m = J / (vf - vi);
+
+                results = [
+                    { label: "Integrated Impulse J", val: J.toFixed(2), unit: "N·s" },
+                    { label: "Final Velocity (v_f)", val: vf.toFixed(2), unit: "m/s" },
+                    { label: "Peak Force F_max", val: Math.max(...forcePoints).toFixed(2), unit: "N" }
+                ];
+
+                steps = [
+                    `1. Definite Integral Equation: J = ∫_{${t0}}^{${tf}} (${funcStr}) dt`,
+                    `2. Numerical Integration Technique: Trapezoidal Rule with N = ${N} steps`,
+                    `3. Evaluated Total Impulse J = ${J.toFixed(4)} N·s`,
+                    `4. Change in Velocity Δv = J / m = ${J.toFixed(4)} / ${m} = ${(J/m).toFixed(4)} m/s`,
+                    `5. Final Result Velocity (v_f) = v_i + Δv = ${vf.toFixed(4)} m/s`
+                ];
+
+                chartData = {
+                    labels: timePoints.map(t => t.toFixed(2)),
+                    datasets: [
+                        {
+                            label: 'Variable Force F(t) [N]',
+                            data: forcePoints,
+                            borderColor: '#0284c7',
+                            backgroundColor: 'rgba(2, 132, 199, 0.2)',
+                            fill: true,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Velocity v(t) [m/s]',
+                            data: velPoints,
+                            borderColor: '#10b981',
+                            borderDash: [5, 5],
+                            fill: false,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                };
+
+            } else if (currentCase === 'case3') {
+                const mA = parseFloat(document.getElementById('input_mA').value) || 1;
+                const vA1 = parseFloat(document.getElementById('input_vA1').value) || 0;
+                const mB = parseFloat(document.getElementById('input_mB').value) || 1;
+                const vB1 = parseFloat(document.getElementById('input_vB1').value) || 0;
+                const e = parseFloat(document.getElementById('input_e').value) || 0;
+
+                // Simultaneous Equations:
+                // 1) mA*vA1 + mB*vB1 = mA*vA2 + mB*vB2
+                // 2) e*(vA1 - vB1) = vB2 - vA2  =>  vB2 = vA2 + e*(vA1 - vB1)
+                
+                const relVel = vA1 - vB1;
+                const vA2 = (mA * vA1 + mB * vB1 - mB * e * relVel) / (mA + mB);
+                const vB2 = vA2 + e * relVel;
+
+                const impulseOnA = mA * (vA2 - vA1);
+                const impulseOnB = mB * (vB2 - vB1);
+                const initialKE = 0.5 * mA * vA1**2 + 0.5 * mB * vB1**2;
+                const finalKE = 0.5 * mA * vA2**2 + 0.5 * mB * vB2**2;
+                const lossKE = initialKE - finalKE;
+
+                results = [
+                    { label: "Vel A After (v_A2)", val: vA2.toFixed(2), unit: "m/s" },
+                    { label: "Vel B After (v_B2)", val: vB2.toFixed(2), unit: "m/s" },
+                    { label: "Impulse Exchange J", val: Math.abs(impulseOnA).toFixed(2), unit: "N·s" }
+                ];
+
+                steps = [
+                    `1. Momentum Conservation: (${mA})(${vA1}) + (${mB})(${vB1}) = ${mA}·v_A2 + ${mB}·v_B2`,
+                    `2. Restitution Relation: v_B2 - v_A2 = e(v_A1 - v_B1) = ${e} × (${relVel}) = ${(e*relVel).toFixed(2)}`,
+                    `3. Solved Post-Collision Velocities:`,
+                    `   - Object A (v_A2) = ${vA2.toFixed(4)} m/s`,
+                    `   - Object B (v_B2) = ${vB2.toFixed(4)} m/s`,
+                    `4. Internal Impulse Transferred = ${Math.abs(impulseOnA).toFixed(4)} N·s`,
+                    `5. Kinetic Energy Loss = ${(lossKE).toFixed(2)} J (${((lossKE/initialKE)*100 || 0).toFixed(1)}% dissipated)`
+                ];
+
+                chartData = {
+                    labels: ['Before Collision', 'After Collision'],
+                    datasets: [
+                        {
+                            label: 'Object A Momentum [kg·m/s]',
+                            data: [mA * vA1, mA * vA2],
+                            backgroundColor: '#3b82f6'
+                        },
+                        {
+                            label: 'Object B Momentum [kg·m/s]',
+                            data: [mB * vB1, mB * vB2],
+                            backgroundColor: '#f59e0b'
+                        }
+                    ]
+                };
+
+            } else if (currentCase === 'case4') {
+                const I = parseFloat(document.getElementById('input_I').value) || 1;
+                let wi = parseFloat(document.getElementById('input_wi').value) || 0;
+                let wf = parseFloat(document.getElementById('input_wf').value) || 0;
+                let T = parseFloat(document.getElementById('input_T').value) || 0;
+                let dt = parseFloat(document.getElementById('input_dt').value) || 0;
+
+                if (target === 'wf') wf = wi + (T * dt) / I;
+                else if (target === 'wi') wi = wf - (T * dt) / I;
+                else if (target === 'T') T = (I * (wf - wi)) / dt;
+                else if (target === 'dt') dt = (I * (wf - wi)) / T;
+                else if (target === 'I') I = (T * dt) / (wf - wi);
+
+                const J_theta = T * dt;
+                const L_i = I * wi;
+                const L_f = I * wf;
+
+                results = [
+                    { label: "Angular Impulse (J_θ)", val: J_theta.toFixed(2), unit: "N·m·s" },
+                    { label: "Target Value", val: getVarVal(target, {wf,wi,T,dt,I}).toFixed(2), unit: getUnit(target) },
+                    { label: "Δ Angular Momentum", val: (L_f - L_i).toFixed(2), unit: "kg·m²/s" }
+                ];
+
+                steps = [
+                    `1. Angular Principle: J_θ = ∫ T dt = I(ω_f - ω_i)`,
+                    `2. Applied Torque (T) = ${T} N·m over Δt = ${dt} s`,
+                    `3. Angular Impulse J_θ = ${T} × ${dt} = ${J_theta.toFixed(2)} N·m·s`,
+                    `4. Initial Angular Momentum L_i = ${L_i.toFixed(2)} kg·m²/s`,
+                    `5. Final Angular Momentum L_f = ${L_f.toFixed(2)} kg·m²/s`,
+                    `6. Solved Parameter [${target}]: ${getVarVal(target, {wf,wi,T,dt,I}).toFixed(4)} ${getUnit(target)}`
+                ];
+
+                chartData = {
+                    labels: ['0', (dt/2).toFixed(1), dt.toFixed(1)],
+                    datasets: [
+                        {
+                            label: 'Torque T [N·m]',
+                            data: [T, T, T],
+                            borderColor: '#ec4899',
+                            backgroundColor: 'rgba(236, 72, 153, 0.2)',
+                            fill: true,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Angular Velocity ω [rad/s]',
+                            data: [wi, (wi + wf) / 2, wf],
+                            borderColor: '#8b5cf6',
+                            borderDash: [5, 5],
+                            yAxisID: 'y1'
+                        }
+                    ]
+                };
+            }
+
+            // Display Results in UI
+            renderResultCards(results);
+            renderSteps(steps);
+            renderChart(chartData);
+            lastChartData = chartData;
+        }
+
+        // Generate Plot Data for Case 1
+        function generateCase1Chart(F, dt, vi, vf, m) {
+            const timeSteps = [0, dt];
+            return {
+                labels: ['0', `${dt}s`],
+                datasets: [
+                    {
+                        label: 'Constant Force F [N]',
+                        data: [F, F],
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2, 132, 199, 0.2)',
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Linear Velocity v [m/s]',
+                        data: [vi, vf],
+                        borderColor: '#10b981',
+                        borderDash: [4, 4],
+                        yAxisID: 'y1'
+                    }
+                ]
+            };
+        }
+
+        // UI Helpers
+        function getVarVal(key, map) {
+            return map[key] !== undefined ? map[key] : 0;
+        }
+
+        function getUnit(key) {
+            const unitMap = {
+                m: 'kg', vi: 'm/s', vf: 'm/s', F: 'N', dt: 's',
+                I: 'kg·m²', wi: 'rad/s', wf: 'rad/s', T: 'N·m'
+            };
+            return unitMap[key] || '';
+        }
+
+        function renderResultCards(cards) {
+            elements.resultCards.innerHTML = cards.map(c => `
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">${c.label}</p>
+                    <p class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">${c.val}</p>
+                    <span class="text-xs text-brand-500 font-mono">${c.unit}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderSteps(steps) {
+            elements.solutionSteps.innerHTML = steps.map(s => `
+                <div class="py-1 border-b border-slate-200 dark:border-slate-800 last:border-none">
+                    ${s}
+                </div>
+            `).join('');
+        }
+
+        // Render Chart.js
+        function renderChart(data) {
+            const ctx = document.getElementById('physicsChart').getContext('2d');
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#475569';
+            const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const chartType = currentCase === 'case3' ? 'bar' : 'line';
+
+            chartInstance = new Chart(ctx, {
+                type: chartType,
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: { color: gridColor },
+                            ticks: { color: textColor },
+                            title: {
+                                display: true,
+                                text: currentCase === 'case4' ? 'Torque (N·m)' : 'Force / Mass (N)',
+                                color: textColor
+                            }
+                        },
+                        y1: currentCase === 'case3' ? undefined : {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: textColor },
+                            title: {
+                                display: true,
+                                text: currentCase === 'case4' ? 'Ang. Velocity (rad/s)' : 'Velocity (m/s)',
+                                color: textColor
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: textColor }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
